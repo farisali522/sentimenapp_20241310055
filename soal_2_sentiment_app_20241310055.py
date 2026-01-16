@@ -137,28 +137,39 @@ def main():
         st.header("Evaluasi Model (Logistic Regression)")
         
         if st.button("Jalankan Evaluasi"):
-            if 'clean_text' not in df.columns:
-                 df['clean_text'] = df['text'].apply(npm_20241310055_preprocessing_lengkap)
-            
-            X = df['clean_text']
-            y = df['label']
-            X_vec = vectorizer.transform(X)
-            y_pred = model.predict(X_vec)
-            
-            acc = accuracy_score(y, y_pred)
-            st.metric("Akurasi Model", f"{acc*100:.2f}%")
-            
-            col_eval1, col_eval2 = st.columns(2)
-            with col_eval1:
-                st.write("Confusion Matrix:")
-                cm = confusion_matrix(y, y_pred)
-                fig, ax = plt.subplots()
-                sns.heatmap(cm, annot=True, fmt='d', cmap='Blues', xticklabels=model.classes_, yticklabels=model.classes_)
-                st.pyplot(fig)
-            
-            with col_eval2:
-                st.write("Detail Report:")
-                st.text(classification_report(y, y_pred))
+            if df is not None and len(df) > 0:
+                with st.spinner("Menghitung metriks evaluasi..."):
+                    # Gunakan clean_text yang sudah ada (dari hasil training lokal) jika tersedia
+                    if 'clean_text' in df.columns:
+                        X = df['clean_text'].fillna('')
+                    else:
+                        st.info("Melakukan preprocessing dataset (Hanya dilakukan sekali)...")
+                        X = df['text'].apply(npm_20241310055_preprocessing_lengkap)
+                    
+                    y = df['label']
+                    X_vec = vectorizer.transform(X)
+                    y_pred = model.predict(X_vec)
+                    
+                    acc = accuracy_score(y, y_pred)
+                    st.metric("Akurasi Model (Terhadap Seluruh Dataset)", f"{acc*100:.2f}%")
+                    
+                    col_eval1, col_eval2 = st.columns(2)
+                    with col_eval1:
+                        st.write("### Confusion Matrix")
+                        cm = confusion_matrix(y, y_pred)
+                        fig, ax = plt.subplots(figsize=(8, 6))
+                        sns.heatmap(cm, annot=True, fmt='d', cmap='Blues', 
+                                    xticklabels=model.classes_, 
+                                    yticklabels=model.classes_)
+                        plt.xlabel('Prediksi')
+                        plt.ylabel('Aktual')
+                        st.pyplot(fig)
+                    
+                    with col_eval2:
+                        st.write("### Classification Report")
+                        st.text(classification_report(y, y_pred))
+            else:
+                st.warning("Data kosong setelah difilter.")
 
     # === TAB 3: PREDICTION ===
     with tab3:
