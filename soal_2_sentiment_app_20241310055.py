@@ -7,7 +7,8 @@ import nltk
 import matplotlib.pyplot as plt
 import seaborn as sns
 from nltk.corpus import stopwords
-from nltk.stem import PorterStemmer
+from nltk.stem import WordNetLemmatizer
+from Sastrawi.Stemmer.StemmerFactory import StemmerFactory
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import confusion_matrix, accuracy_score, classification_report
 
@@ -65,13 +66,17 @@ def npm_20241310055_preprocessing_lengkap(text):
     # 4. Stopword Removal
     words = [w for w in words if w not in stopwords_id and w not in stopwords_en]
     
-    # 5. Lemmatization (Mengembalikan ke bentuk dasar kamus)
-    lemmatizer = nltk.stem.WordNetLemmatizer()
+    # 5. Lemmatization
+    lemmatizer = WordNetLemmatizer()
     words = [lemmatizer.lemmatize(w) for w in words]
 
-    # 6. Stemming (Skipped - User Request: English Stemming destroys Indo words)
-    # stemmer = PorterStemmer()
-    # words = [stemmer.stem(w) for w in words]
+    # 6. STEMMING BAHASA INDONESIA (SOLUSI AKURASI)
+    try:
+        factory = StemmerFactory()
+        stemmer = factory.create_stemmer()
+        words = [stemmer.stem(w) for w in words]
+    except:
+        pass
     
     return " ".join(words)
 
